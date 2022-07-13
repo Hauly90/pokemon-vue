@@ -3,17 +3,36 @@
     <h1>Welcome to the Pokémon Encyclopedia!</h1>
     <!-- <a v-if="showPokemon">{{ pokemonDetails }}</a> -->
     <!-- <a v-if="showPokemon">{{ anotherAPICall.forms[0].name }}</a> -->
-    <div  class="d-grid gap-2 d-md-flex justify-content-center">
+
+    <div class="from-group gap-1 d-grid justify-content-center">
+      <label>Search for pokemon:</label>
+      <input
+        type="text"
+        class="form-control"
+        name="onePokemons"
+        id="onePokemon"
+        v-model="onePokemonValue"
+      />
       <button
-        v-on:click="showPokemon = true"
-        class="btn btn-dark"
+        type="submit"
+        v-on:click="getOnePokemon()"
+        class="btn btn-primary"
       >
-        Click in order to get a pokemons!
+        Search
       </button>
-      <button
-        v-on:click="showPokemon = false"
-        class="btn btn-dark"
-      >
+      <!-- <p> {{ onePokemonValue }} </p> -->
+    </div>
+
+    <div v-if="showOnePokemon" class="pokemon_rendering">
+      <img :src="onePokemonArray.sprites.other.dream_world.front_default" />
+      <p>{{ onePokemonArray.forms[0].name }}</p>
+    </div>
+
+    <div class="d-grid gap-2 d-md-flex justify-content-center">
+      <button v-on:click="showPokemon = true" class="btn btn-dark">
+        Click in order to get pokemons!
+      </button>
+      <button v-on:click="showPokemon = false" class="btn btn-dark">
         Hide pokemons
       </button>
     </div>
@@ -43,12 +62,21 @@ export default {
       pokemonDetails: [],
       anotherAPICall: [],
       showPokemon: false,
+      onePokemonValue: "",
+      onePokemonArray: [],
+      showOnePokemon: false,
     };
   },
   methods: {
+    handleErrors(response) {
+      if (!response.ok) {
+        throw Error(response.statusText);
+      }
+      return response.json();
+    },
     setAllPokemons() {
       fetch("https://pokeapi.co/api/v2/pokemon/?limit=16")
-        .then((response) => response.json())
+        .then((response) => this.handleErrors(response))
         .then((data) => {
           this.pokemonDetails = data;
 
@@ -69,6 +97,16 @@ export default {
             this.anotherAPICall = test;
           }, 900);
         });
+    },
+
+    getOnePokemon() {
+      console.log(this.onePokemonValue);
+      // let somePokemon = document.getElementById("onePokemon").value;
+      fetch(`https://pokeapi.co/api/v2/pokemon/${this.onePokemonValue}`)
+        .then((response) => this.handleErrors(response))
+        .catch(error => console.log(error))
+        .then((data) => (this.onePokemonArray = data));
+      this.showOnePokemon = true;
     },
   },
   getAllPokemons() {},
@@ -110,5 +148,14 @@ button {
   border-radius: 5px;
   margin: 5px;
   padding: 5px;
+}
+
+input,
+label {
+  display: block;
+}
+
+label {
+  font-size: 20px;
 }
 </style>
